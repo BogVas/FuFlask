@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Calculator</title>
+    <style>
+        body { font-family: Arial; background: #f0f0f0; padding: 20px; }
+        #calculator { width: 320px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 0 10px #aaa; margin: auto; }
+        input[type=text] { width: 100%; font-size: 20px; margin-bottom: 10px; padding: 10px; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .buttons button { font-size: 18px; padding: 15px; }
+        .result, .error { margin-top: 10px; font-weight: bold; }
+        .history { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div id="calculator">
+        <input type="text" id="expression" readonly>
+        <div class="buttons">
+            <button onclick="press('7')">7</button>
+            <button onclick="press('8')">8</button>
+            <button onclick="press('9')">9</button>
+            <button onclick="press('/')">/</button>
+
+            <button onclick="press('4')">4</button>
+            <button onclick="press('5')">5</button>
+            <button onclick="press('6')">6</button>
+            <button onclick="press('*')">*</button>
+
+            <button onclick="press('1')">1</button>
+            <button onclick="press('2')">2</button>
+            <button onclick="press('3')">3</button>
+            <button onclick="press('-')">-</button>
+
+            <button onclick="press('0')">0</button>
+            <button onclick="press('.')">.</button>
+            <button onclick="press('^')">^</button>
+            <button onclick="press('+')">+</button>
+
+            <button onclick="press('(')">(</button>
+            <button onclick="press(')')">)</button>
+            <button onclick="clearExpr()">C</button>
+            <button onclick="calculate()">=</button>
+
+            <button onclick="press('sin(')">sin</button>
+            <button onclick="press('cos(')">cos</button>
+            <button onclick="press('tan(')">tan</button>
+            <button onclick="press('sqrt(')">sqrt</button>
+
+            <button onclick="press('log(')">log</button>
+            <button onclick="press('log10(')">log10</button>
+            <button onclick="press('exp(')">exp</button>
+            <button onclick="press('abs(')">abs</button>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="error" id="error" style="color:red;"></div>
+        <div class="history">
+            <h3>History:</h3>
+            <ul>
+                {% for entry in history %}
+                    <li>{{ entry }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let expression = "";
+
+        function press(value) {
+            expression += value;
+            document.getElementById("expression").value = expression;
+        }
+
+        function clearExpr() {
+            expression = "";
+            document.getElementById("expression").value = "";
+            document.getElementById("result").innerText = "";
+            document.getElementById("error").innerText = "";
+        }
+
+        function calculate() {
+            fetch("/calculate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ expression })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("result").innerText = "Result: " + data.result;
+                    document.getElementById("error").innerText = "";
+                } else {
+                    document.getElementById("error").innerText = data.error;
+                    document.getElementById("result").innerText = "";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
